@@ -5,7 +5,7 @@ go:
   - 1.9.x
 
 before_install:
-  - go get -t -v ./...
+  - go get -v ./...
 
 script:
   - go test -coverprofile=coverage.txt -covermode=atomic
