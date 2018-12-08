@@ -4,18 +4,27 @@ import (
 	"html/template"
 	"net/http"
 	"regexp"
+	"sync"
 
-	"golang.org/x/net/webdav"
-
-	"github.com/swaggo/files"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
+	"golang.org/x/net/webdav"
 )
 
 // WrapHandler wraps swaggerFiles.Handler and returns http.HandlerFunc
-var WrapHandler = wrapHandler(swaggerFiles.Handler)
+var WrapHandler = wrapHandler(&handler{
+	mu:             &sync.Mutex{},
+	swFilesHandler: swaggerFiles.Handler,
+})
+
+// handler is an internal wrapper func to handle concurrent access to webdav.Handler's fields
+type handler struct {
+	mu             *sync.Mutex
+	swFilesHandler *webdav.Handler
+}
 
 // wapHandler wraps `http.Handler` into `http.HandlerFunc`.
-func wrapHandler(h *webdav.Handler) http.HandlerFunc {
+func wrapHandler(h *handler) http.HandlerFunc {
 	//create a template with name
 	t := template.New("swagger_index.html")
 	index, _ := t.Parse(indexTempl)
@@ -36,7 +45,10 @@ func wrapHandler(h *webdav.Handler) http.HandlerFunc {
 		}
 		path := matches[2]
 		prefix := matches[1]
-		h.Prefix = prefix
+
+		h.mu.Lock()
+		h.swFilesHandler.Prefix = prefix
+		h.mu.Unlock()
 
 		switch path {
 		case "index.html":
@@ -48,7 +60,7 @@ func wrapHandler(h *webdav.Handler) http.HandlerFunc {
 			doc, _ := swag.ReadDoc()
 			w.Write([]byte(doc))
 		default:
-			h.ServeHTTP(w, r)
+			h.swFilesHandler.ServeHTTP(w, r)
 		}
 		return
 	}
