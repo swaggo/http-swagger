@@ -130,6 +130,7 @@ window.onload = function() {
   // Build a system
   const ui = SwaggerUIBundle({
     url: "{{.Host}}",
+    deepLinking: true,
     dom_id: '#swagger-ui',
     validatorUrl: null,
     presets: [
