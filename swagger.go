@@ -129,7 +129,7 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 window.onload = function() {
   // Build a system
   const ui = SwaggerUIBundle({
-    url: document.location.href.replace("index.html", "") + "{{.Host}}",
+    url: "{{.Host}}",
     deepLinking: true,
     dom_id: '#swagger-ui',
     validatorUrl: null,
