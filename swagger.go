@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/net/webdav"
 
-	"github.com/swaggo/gin-swagger/swaggerFiles"
+	"github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
 
