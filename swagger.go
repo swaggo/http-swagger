@@ -12,16 +12,40 @@ import (
 )
 
 // WrapHandler wraps swaggerFiles.Handler and returns http.HandlerFunc
-var WrapHandler = wrapHandler(swaggerFiles.Handler)
+var WrapHandler = Handler()
 
-// wapHandler wraps `http.Handler` into `http.HandlerFunc`.
-func wrapHandler(h *webdav.Handler) http.HandlerFunc {
+// Config stores httpSwagger configuration variables.
+type Config struct {
+	//The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `doc.json`.
+	URL string
+}
+
+// URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
+func URL(url string) func(c *Config) {
+	return func(c *Config) {
+		c.URL = url
+	}
+}
+
+// Handler wraps `http.Handler` into `http.HandlerFunc`.
+func Handler(confs ...func(c *Config)) http.HandlerFunc {
+	var h *webdav.Handler
+	h = swaggerFiles.Handler
+
+	defaultConfig := &Config{
+		URL: "doc.json",
+	}
+
+	for _, c := range confs {
+		c(defaultConfig)
+	}
+
 	//create a template with name
 	t := template.New("swagger_index.html")
 	index, _ := t.Parse(indexTempl)
 
-	type pro struct {
-		Host string
+	type swaggerUIBundle struct {
+		URL string
 	}
 
 	var re = regexp.MustCompile(`(.*)(index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[\?|.]*`)
@@ -40,12 +64,15 @@ func wrapHandler(h *webdav.Handler) http.HandlerFunc {
 
 		switch path {
 		case "index.html":
-			s := &pro{
-				Host: "doc.json", //TODO: provide to customs?
+			s := &swaggerUIBundle{
+				URL: defaultConfig.URL,
 			}
 			index.Execute(w, s)
 		case "doc.json":
-			doc, _ := swag.ReadDoc()
+			doc, err := swag.ReadDoc()
+			if err != nil {
+				panic(err)
+			}
 			w.Write([]byte(doc))
 		default:
 			h.ServeHTTP(w, r)
@@ -129,7 +156,7 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 window.onload = function() {
   // Build a system
   const ui = SwaggerUIBundle({
-    url: "{{.Host}}",
+    url: "{{.URL}}",
     deepLinking: true,
     dom_id: '#swagger-ui',
     validatorUrl: null,

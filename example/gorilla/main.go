@@ -24,6 +24,9 @@ import (
 // @BasePath /v2
 func main() {
 	r := mux.NewRouter()
-	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+
+	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:1323/swagger/doc.json"), //The url pointing to API definition"
+	))
 	http.ListenAndServe(":1323", r)
 }
