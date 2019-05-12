@@ -51,13 +51,7 @@ func Handler(confs ...func(c *Config)) http.HandlerFunc {
 	var re = regexp.MustCompile(`^(.*\/)([^\?].*)?[\?|.]*$`)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		var matches []string
-		if matches = re.FindStringSubmatch(r.RequestURI); len(matches) != 3 {
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(http.StatusText(http.StatusNotFound)))
-			return
-		}
+		matches := re.FindStringSubmatch(r.RequestURI)
 		path := matches[2]
 		prefix := matches[1]
 		h.Prefix = prefix
