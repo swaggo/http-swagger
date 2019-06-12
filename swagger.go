@@ -48,16 +48,10 @@ func Handler(confs ...func(c *Config)) http.HandlerFunc {
 		URL string
 	}
 
-	var re = regexp.MustCompile(`(.*)(index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[\?|.]*`)
+	var re = regexp.MustCompile(`^(.*\/)([^\?].*)?[\?|.]*$`)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		var matches []string
-		if matches = re.FindStringSubmatch(r.RequestURI); len(matches) != 3 {
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(http.StatusText(http.StatusNotFound)))
-			return
-		}
+		matches := re.FindStringSubmatch(r.RequestURI)
 		path := matches[2]
 		prefix := matches[1]
 		h.Prefix = prefix
@@ -74,6 +68,8 @@ func Handler(confs ...func(c *Config)) http.HandlerFunc {
 				panic(err)
 			}
 			w.Write([]byte(doc))
+		case "":
+			http.Redirect(w, r, prefix + "index.html", 301)
 		default:
 			h.ServeHTTP(w, r)
 		}
