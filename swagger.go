@@ -5,9 +5,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"golang.org/x/net/webdav"
-
-	"github.com/swaggo/files"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
 
@@ -17,7 +15,10 @@ var WrapHandler = Handler()
 // Config stores httpSwagger configuration variables.
 type Config struct {
 	//The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `doc.json`.
-	URL string
+	URL          string
+	DeepLinking  bool
+	DocExpansion string
+	DomID        string
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -27,13 +28,36 @@ func URL(url string) func(c *Config) {
 	}
 }
 
+// DeepLinking true, false
+func DeepLinking(deepLinking bool) func(c *Config) {
+	return func(c *Config) {
+		c.DeepLinking = deepLinking
+	}
+}
+
+// DocExpansion list, full, none
+func DocExpansion(docExpansion string) func(c *Config) {
+	return func(c *Config) {
+		c.DocExpansion = docExpansion
+	}
+}
+
+// DomID #swagger-ui
+func DomID(domID string) func(c *Config) {
+	return func(c *Config) {
+		c.DomID = domID
+	}
+}
+
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(confs ...func(c *Config)) http.HandlerFunc {
-	var h *webdav.Handler
-	h = swaggerFiles.Handler
+	var h = swaggerFiles.Handler
 
 	defaultConfig := &Config{
-		URL: "doc.json",
+		URL:          "doc.json",
+		DeepLinking:  true,
+		DocExpansion: "full",
+		DomID:        "#swagger-ui",
 	}
 
 	for _, c := range confs {
@@ -45,10 +69,13 @@ func Handler(confs ...func(c *Config)) http.HandlerFunc {
 	index, _ := t.Parse(indexTempl)
 
 	type swaggerUIBundle struct {
-		URL string
+		URL          string
+		DeepLinking  bool
+		DocExpansion string
+		DomID        string
 	}
 
-	var re = regexp.MustCompile(`^(.*\/)([^\?].*)?[\?|.]*$`)
+	var re = regexp.MustCompile(`^(.*/)([^?].*)?[?|.]*$`)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		matches := re.FindStringSubmatch(r.RequestURI)
@@ -59,17 +86,20 @@ func Handler(confs ...func(c *Config)) http.HandlerFunc {
 		switch path {
 		case "index.html":
 			s := &swaggerUIBundle{
-				URL: defaultConfig.URL,
+				URL:          defaultConfig.URL,
+				DeepLinking:  defaultConfig.DeepLinking,
+				DocExpansion: defaultConfig.DocExpansion,
+				DomID:        defaultConfig.DomID,
 			}
-			index.Execute(w, s)
+			_ = index.Execute(w, s)
 		case "doc.json":
 			doc, err := swag.ReadDoc()
 			if err != nil {
 				panic(err)
 			}
-			w.Write([]byte(doc))
+			_, _ = w.Write([]byte(doc))
 		case "":
-			http.Redirect(w, r, prefix + "index.html", 301)
+			http.Redirect(w, r, prefix+"index.html", 301)
 		default:
 			h.ServeHTTP(w, r)
 		}
@@ -113,7 +143,7 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="position:absolute;width:0;height:0">
   <defs>
     <symbol viewBox="0 0 20 20" id="unlocked">
-          <path d="M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V6h2v-.801C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8z"></path>
+      <path d="M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V6h2v-.801C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8z"></path>
     </symbol>
 
     <symbol viewBox="0 0 20 20" id="locked">
@@ -132,7 +162,6 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
       <path d="M17.418 6.109c.272-.268.709-.268.979 0s.271.701 0 .969l-7.908 7.83c-.27.268-.707.268-.979 0l-7.908-7.83c-.27-.268-.27-.701 0-.969.271-.268.709-.268.979 0L10 13.25l7.418-7.141z"/>
     </symbol>
 
-
     <symbol viewBox="0 0 24 24" id="jump-to">
       <path d="M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7z"/>
     </symbol>
@@ -140,7 +169,6 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
     <symbol viewBox="0 0 24 24" id="expand">
       <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
     </symbol>
-
   </defs>
 </svg>
 
@@ -153,8 +181,9 @@ window.onload = function() {
   // Build a system
   const ui = SwaggerUIBundle({
     url: "{{.URL}}",
-    deepLinking: true,
-    dom_id: '#swagger-ui',
+    deepLinking: {{.DeepLinking}},
+    dom_id: '{{.DomID}}',
+    docExpansion: '{{.DocExpansion}}',
     validatorUrl: null,
     presets: [
       SwaggerUIBundle.presets.apis,
