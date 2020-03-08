@@ -79,6 +79,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		case "index.html":
 			_ = index.Execute(w, config)
 		case "doc.json":
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			doc, err := swag.ReadDoc()
 			if err != nil {
 				panic(err)
