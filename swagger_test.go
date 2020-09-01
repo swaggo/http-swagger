@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	_ "github.com/Dysar/http-swagger/example/go-chi/docs"
 	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
-	_ "github.com/swaggo/http-swagger/example/go-chi/docs"
 )
 
 func TestWrapHandler(t *testing.T) {

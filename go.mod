@@ -1,4 +1,4 @@
-module github.com/swaggo/http-swagger
+module github.com/Dysar/http-swagger
 
 go 1.13
 
