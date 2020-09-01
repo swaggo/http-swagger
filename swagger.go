@@ -69,8 +69,11 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		matches := re.FindStringSubmatch(r.RequestURI)
-		path := matches[2]
-		prefix := matches[1]
+		var path, prefix string
+		if len(matches) > 2 {
+			path = matches[2]
+			prefix = matches[1]
+		}
 
 		h := swaggerFiles.Handler
 		h.Prefix = prefix
