@@ -105,6 +105,100 @@ func TestDomID(t *testing.T) {
 	assert.Equal(t, expected, cfg.DomID)
 }
 
+func TestConfigURL(t *testing.T) {
+
+	type fixture struct {
+		desc  string
+		cfgfn func(c *Config)
+		exp   *Config
+	}
+
+	fixtures := []fixture{
+		{
+			desc: "configure URL",
+			exp: &Config{
+				URL: "https://example.org/doc.json",
+			},
+			cfgfn: URL("https://example.org/doc.json"),
+		},
+		{
+			desc: "configure DeepLinking",
+			exp: &Config{
+				DeepLinking: true,
+			},
+			cfgfn: DeepLinking(true),
+		},
+		{
+			desc: "configure DocExpansion",
+			exp: &Config{
+				DocExpansion: "none",
+			},
+			cfgfn: DocExpansion("none"),
+		},
+		{
+			desc: "configure DomID",
+			exp: &Config{
+				DomID: "#swagger-ui",
+			},
+			cfgfn: DomID("#swagger-ui"),
+		},
+		{
+			desc: "configure Plugins",
+			exp: &Config{
+				Plugins: []template.JS{
+					"SomePlugin",
+					"AnotherPlugin",
+				},
+			},
+			cfgfn: Plugins([]string{
+				"SomePlugin",
+				"AnotherPlugin",
+			}),
+		},
+		{
+			desc: "configure UIConfig",
+			exp: &Config{
+				UIConfig: map[template.JS]template.JS{
+					"urls": `["https://example.org/doc1.json","https://example.org/doc1.json"],`,
+				},
+			},
+			cfgfn: UIConfig(map[string]string{
+				"urls": `["https://example.org/doc1.json","https://example.org/doc1.json"],`,
+			}),
+		},
+		{
+			desc: "configure BeforeScript",
+			exp: &Config{
+				BeforeScript: `const SomePlugin = (system) => ({
+    // Some plugin
+  });`,
+			},
+			cfgfn: BeforeScript(`const SomePlugin = (system) => ({
+    // Some plugin
+  });`),
+		},
+		{
+			desc: "configure AfterScript",
+			exp: &Config{
+				AfterScript: `const SomePlugin = (system) => ({
+    // Some plugin
+  });`,
+			},
+			cfgfn: AfterScript(`const SomePlugin = (system) => ({
+    // Some plugin
+  });`),
+		},
+	}
+
+	for _, fix := range fixtures {
+		t.Run(fix.desc, func(t *testing.T) {
+			cfg := &Config{}
+			fix.cfgfn(cfg)
+			assert.Equal(t, cfg, fix.exp)
+		})
+	}
+}
+
 func TestUIConfigOptions(t *testing.T) {
 
 	type fixture struct {
@@ -282,10 +376,8 @@ func TestUIConfigOptions(t *testing.T) {
 		},
 	}
 
-	for i, fix := range fixtures {
+	for _, fix := range fixtures {
 		t.Run(fix.desc, func(t *testing.T) {
-			t.Logf("%d. %s\n", i, fix.desc)
-
 			tmpl := template.New("swagger_index.html")
 			index, err := tmpl.Parse(indexTempl)
 			if err != nil {
@@ -345,7 +437,7 @@ func TestUIConfigOptions(t *testing.T) {
 			}
 
 			if buflen > explen {
-				printContext(i)
+				printContext(explen - 1)
 				t.Fatalf(`first unequal line: expected EOF, but got "%s"`, buflns[explen])
 			}
 		})
