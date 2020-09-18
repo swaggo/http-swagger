@@ -19,6 +19,10 @@ type Config struct {
 	DeepLinking  bool
 	DocExpansion string
 	DomID        string
+	Plugins      []template.JS
+	UIConfig     map[template.JS]template.JS
+	BeforeScript template.JS
+	AfterScript  template.JS
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -46,6 +50,43 @@ func DocExpansion(docExpansion string) func(c *Config) {
 func DomID(domID string) func(c *Config) {
 	return func(c *Config) {
 		c.DomID = domID
+	}
+}
+
+// Plugins specifies additional plugins to load into Swagger UI.
+func Plugins(plugins []string) func(c *Config) {
+	return func(c *Config) {
+		vs := make([]template.JS, len(plugins))
+		for i, v := range plugins {
+			vs[i] = template.JS(v)
+		}
+		c.Plugins = vs
+	}
+}
+
+// UIConfig specifies additional SwaggerUIBundle config object properties.
+func UIConfig(props map[string]string) func(c *Config) {
+	return func(c *Config) {
+		vs := make(map[template.JS]template.JS, len(props))
+		for k, v := range props {
+			vs[template.JS(k)] = template.JS(v)
+		}
+		c.UIConfig = vs
+	}
+}
+
+// BeforeScript holds JavaScript to be run right before the Swagger UI object is created.
+func BeforeScript(js string) func(c *Config) {
+	return func(c *Config) {
+		c.BeforeScript = template.JS(js)
+	}
+}
+
+// AfterScript holds JavaScript to be run right after the Swagger UI object is created
+// and set on the window.
+func AfterScript(js string) func(c *Config) {
+	return func(c *Config) {
+		c.AfterScript = template.JS(js)
 	}
 }
 
@@ -165,6 +206,9 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 <script src="./swagger-ui-standalone-preset.js"> </script>
 <script>
 window.onload = function() {
+  {{- if .BeforeScript}}
+  {{.BeforeScript}}
+  {{- end}}
   // Build a system
   const ui = SwaggerUIBundle({
     url: "{{.URL}}",
@@ -178,11 +222,20 @@ window.onload = function() {
     ],
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
+      {{- range $plugin := .Plugins }},
+      {{$plugin}}
+      {{- end}}
     ],
+    {{- range $k, $v := .UIConfig}}
+    {{$k}}: {{$v}},
+    {{- end}}
     layout: "StandaloneLayout"
   })
 
   window.ui = ui
+  {{- if .AfterScript}}
+  {{.AfterScript}}
+  {{- end}}
 }
 </script>
 </body>
