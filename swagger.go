@@ -19,6 +19,7 @@ type Config struct {
 	DeepLinking  bool
 	DocExpansion string
 	DomID        string
+	Swagger      swag.Swagger
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -46,6 +47,13 @@ func DocExpansion(docExpansion string) func(c *Config) {
 func DomID(domID string) func(c *Config) {
 	return func(c *Config) {
 		c.DomID = domID
+	}
+}
+
+// Swagger if another swagger then one registered in swag should be read
+func Swagger(swagger swag.Swagger) func(c *Config) {
+	return func(c *Config) {
+		c.Swagger = swagger
 	}
 }
 
@@ -80,9 +88,15 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			_ = index.Execute(w, config)
 		case "doc.json":
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			doc, err := swag.ReadDoc()
-			if err != nil {
-				panic(err)
+			var doc string
+			var err error
+			if config.Swagger != nil {
+				doc = config.Swagger.ReadDoc()
+			} else {
+				doc, err = swag.ReadDoc()
+				if err != nil {
+					panic(err)
+				}
 			}
 			_, _ = w.Write([]byte(doc))
 		case "":
