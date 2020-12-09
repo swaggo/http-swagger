@@ -5,15 +5,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
-	_ "github.com/swaggo/http-swagger/example/go-chi/docs"
+	_ "github.com/swaggo/http-swagger/testdata/docs"
 )
 
 func TestWrapHandler(t *testing.T) {
-	router := chi.NewRouter()
+	router := http.NewServeMux()
 
-	router.Get("/*", WrapHandler)
+	router.Handle("/", WrapHandler)
 
 	w1 := performRequest("GET", "/index.html", router)
 	assert.Equal(t, 200, w1.Code)
