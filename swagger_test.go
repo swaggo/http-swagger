@@ -21,6 +21,7 @@ func TestWrapHandler(t *testing.T) {
 	w2 := performRequest("GET", "/doc.json", router)
 	assert.Equal(t, 200, w2.Code)
 	assert.Equal(t, "application/json; charset=utf-8", w2.Header().Get("content-type"))
+	assert.Equal(t, "*", w2.Header().Get("access-control-allow-origin"))
 
 	w3 := performRequest("GET", "/favicon-16x16.png", router)
 	assert.Equal(t, 200, w3.Code)
