@@ -19,6 +19,7 @@ type Config struct {
 	DeepLinking  bool
 	DocExpansion string
 	DomID        string
+	EnableCORS   bool
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -49,6 +50,13 @@ func DomID(domID string) func(c *Config) {
 	}
 }
 
+// EnableCORS true, false
+func EnableCORS(enableCORS bool) func(c *Config) {
+	return func(c *Config) {
+		c.EnableCORS = enableCORS
+	}
+}
+
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(configFns ...func(*Config)) http.HandlerFunc {
 	config := &Config{
@@ -56,6 +64,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		DeepLinking:  true,
 		DocExpansion: "list",
 		DomID:        "#swagger-ui",
+		EnableCORS:   true,
 	}
 	for _, configFn := range configFns {
 		configFn(config)
@@ -80,6 +89,9 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			_ = index.Execute(w, config)
 		case "doc.json":
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			if config.EnableCORS {
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+			}
 			doc, err := swag.ReadDoc()
 			if err != nil {
 				panic(err)
