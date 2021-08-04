@@ -14,7 +14,7 @@ var WrapHandler = Handler()
 
 // Config stores httpSwagger configuration variables.
 type Config struct {
-	//The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `mockedSwag.json`.
+	// The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `doc.json`.
 	URL          string
 	DeepLinking  bool
 	DocExpansion string
@@ -52,7 +52,7 @@ func DomID(domID string) func(c *Config) {
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(configFns ...func(*Config)) http.HandlerFunc {
 	config := &Config{
-		URL:          "mockedSwag.json",
+		URL:          "doc.json",
 		DeepLinking:  true,
 		DocExpansion: "list",
 		DomID:        "#swagger-ui",
@@ -78,7 +78,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		switch path {
 		case "index.html":
 			_ = index.Execute(w, config)
-		case "mockedSwag.json":
+		case "doc.json":
 			doc, err := swag.ReadDoc()
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
