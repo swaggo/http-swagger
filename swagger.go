@@ -14,7 +14,7 @@ var WrapHandler = Handler()
 
 // Config stores httpSwagger configuration variables.
 type Config struct {
-	//The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `doc.json`.
+	//The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `mockedSwag.json`.
 	URL          string
 	DeepLinking  bool
 	DocExpansion string
@@ -28,21 +28,21 @@ func URL(url string) func(c *Config) {
 	}
 }
 
-// DeepLinking true, false
+// DeepLinking true, false.
 func DeepLinking(deepLinking bool) func(c *Config) {
 	return func(c *Config) {
 		c.DeepLinking = deepLinking
 	}
 }
 
-// DocExpansion list, full, none
+// DocExpansion list, full, none.
 func DocExpansion(docExpansion string) func(c *Config) {
 	return func(c *Config) {
 		c.DocExpansion = docExpansion
 	}
 }
 
-// DomID #swagger-ui
+// DomID #swagger-ui.
 func DomID(domID string) func(c *Config) {
 	return func(c *Config) {
 		c.DomID = domID
@@ -52,7 +52,7 @@ func DomID(domID string) func(c *Config) {
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(configFns ...func(*Config)) http.HandlerFunc {
 	config := &Config{
-		URL:          "doc.json",
+		URL:          "mockedSwag.json",
 		DeepLinking:  true,
 		DocExpansion: "list",
 		DomID:        "#swagger-ui",
@@ -61,7 +61,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		configFn(config)
 	}
 
-	//create a template with name
+	// create a template with name
 	t := template.New("swagger_index.html")
 	index, _ := t.Parse(indexTempl)
 
@@ -78,19 +78,20 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		switch path {
 		case "index.html":
 			_ = index.Execute(w, config)
-		case "doc.json":
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		case "mockedSwag.json":
 			doc, err := swag.ReadDoc()
 			if err != nil {
-				panic(err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+				return
 			}
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			_, _ = w.Write([]byte(doc))
 		case "":
 			http.Redirect(w, r, prefix+"index.html", 301)
 		default:
 			h.ServeHTTP(w, r)
 		}
-		return
 	}
 }
 
