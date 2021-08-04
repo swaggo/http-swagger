@@ -44,11 +44,11 @@ func TestWrapHandler(t *testing.T) {
 	w1 := performRequest("GET", "/index.html", router)
 	assert.Equal(t, 200, w1.Code)
 
-	w2 := performRequest("GET", "/mockedSwag.json", router)
+	w2 := performRequest("GET", "/doc.json", router)
 	assert.Equal(t, 500, w2.Code)
 
 	swag.Register(swag.Name, &mockedSwag{})
-	w2 = performRequest("GET", "/mockedSwag.json", router)
+	w2 = performRequest("GET", "/doc.json", router)
 	assert.Equal(t, 200, w2.Code)
 	assert.Equal(t, "application/json; charset=utf-8", w2.Header().Get("content-type"))
 
