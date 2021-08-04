@@ -28,21 +28,21 @@ func URL(url string) func(c *Config) {
 	}
 }
 
-// DeepLinking true, false
+// DeepLinking true, false.
 func DeepLinking(deepLinking bool) func(c *Config) {
 	return func(c *Config) {
 		c.DeepLinking = deepLinking
 	}
 }
 
-// DocExpansion list, full, none
+// DocExpansion list, full, none.
 func DocExpansion(docExpansion string) func(c *Config) {
 	return func(c *Config) {
 		c.DocExpansion = docExpansion
 	}
 }
 
-// DomID #swagger-ui
+// DomID #swagger-ui.
 func DomID(domID string) func(c *Config) {
 	return func(c *Config) {
 		c.DomID = domID
@@ -61,7 +61,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		configFn(config)
 	}
 
-	//create a template with name
+	// create a template with name
 	t := template.New("swagger_index.html")
 	index, _ := t.Parse(indexTempl)
 
@@ -79,18 +79,19 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		case "index.html":
 			_ = index.Execute(w, config)
 		case "doc.json":
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			doc, err := swag.ReadDoc()
 			if err != nil {
-				panic(err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+				return
 			}
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			_, _ = w.Write([]byte(doc))
 		case "":
 			http.Redirect(w, r, prefix+"index.html", 301)
 		default:
 			h.ServeHTTP(w, r)
 		}
-		return
 	}
 }
 
