@@ -5,7 +5,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
 	"github.com/swaggo/swag"
 )
@@ -37,9 +36,9 @@ func (s *mockedSwag) ReadDoc() string {
 }
 
 func TestWrapHandler(t *testing.T) {
-	router := chi.NewRouter()
+	router := http.NewServeMux()
 
-	router.Get("/*", Handler(DocExpansion("none"), DomID("#swagger-ui")))
+	router.Handle("/", Handler(DocExpansion("none"), DomID("#swagger-ui")))
 
 	w1 := performRequest("GET", "/index.html", router)
 	assert.Equal(t, 200, w1.Code)
