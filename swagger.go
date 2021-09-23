@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"regexp"
+	"sync"
 
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
@@ -92,6 +93,8 @@ func AfterScript(js string) func(c *Config) {
 
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(configFns ...func(*Config)) http.HandlerFunc {
+	var once sync.Once
+
 	config := &Config{
 		URL:          "doc.json",
 		DeepLinking:  true,
@@ -111,10 +114,11 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		matches := re.FindStringSubmatch(r.RequestURI)
 		path := matches[2]
-		prefix := matches[1]
 
 		h := swaggerFiles.Handler
-		h.Prefix = prefix
+		once.Do(func() {
+			h.Prefix = matches[1]
+		})
 
 		switch path {
 		case "index.html":
@@ -129,7 +133,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			_, _ = w.Write([]byte(doc))
 		case "":
-			http.Redirect(w, r, prefix+"index.html", 301)
+			http.Redirect(w, r, h.Prefix+"index.html", 301)
 		default:
 			h.ServeHTTP(w, r)
 		}
