@@ -2,7 +2,7 @@
 
 Default net/http wrapper to automatically generate RESTful API documentation with Swagger 2.0.
 
-[![Travis branch](https://img.shields.io/travis/swaggo/http-swagger/master.svg)](https://travis-ci.com/swaggo/http-swagger)
+[![Build Status](https://github.com/swaggo/http-swagger/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/features/actions)
 [![Codecov branch](https://img.shields.io/codecov/c/github/swaggo/http-swagger/master.svg)](https://codecov.io/gh/swaggo/http-swagger)
 [![Go Report Card](https://goreportcard.com/badge/github.com/swaggo/http-swagger)](https://goreportcard.com/report/github.com/swaggo/http-swagger)
 [![GoDoc](https://godoc.org/github.com/swaggo/http-swagger?status.svg)](https://godoc.org/github.com/swaggo/http-swagger)
