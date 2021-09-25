@@ -6,6 +6,7 @@ Default net/http wrapper to automatically generate RESTful API documentation wit
 [![Codecov branch](https://img.shields.io/codecov/c/github/swaggo/http-swagger/master.svg)](https://codecov.io/gh/swaggo/http-swagger)
 [![Go Report Card](https://goreportcard.com/badge/github.com/swaggo/http-swagger)](https://goreportcard.com/report/github.com/swaggo/http-swagger)
 [![GoDoc](https://godoc.org/github.com/swaggo/http-swagger?status.svg)](https://godoc.org/github.com/swaggo/http-swagger)
+[![Release](https://img.shields.io/github/release/swaggo/http-swagger.svg?style=flat-square)](https://github.com/swaggo/http-swagger/releases)
 
 ## Usage
 
