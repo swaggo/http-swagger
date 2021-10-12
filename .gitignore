@@ -4,6 +4,9 @@
 *.so
 *.dylib
 
+# Jetbrains
+.idea
+
 # Test binary, build with `go test -c`
 *.test
 
