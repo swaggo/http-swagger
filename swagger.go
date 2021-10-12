@@ -3,6 +3,7 @@ package httpSwagger
 import (
 	"html/template"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"sync"
 
@@ -120,6 +121,19 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			h.Prefix = matches[1]
 		})
 
+		switch filepath.Ext(path) {
+		case ".html":
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		case ".css":
+			w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		case ".js":
+			w.Header().Set("Content-Type", "application/javascript")
+		case ".png":
+			w.Header().Set("Content-Type", "image/png")
+		case ".json":
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		}
+
 		switch path {
 		case "index.html":
 			_ = index.Execute(w, config)
@@ -130,7 +144,6 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 				return
 			}
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			_, _ = w.Write([]byte(doc))
 		case "":
 			http.Redirect(w, r, h.Prefix+"index.html", 301)
