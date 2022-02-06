@@ -115,6 +115,14 @@ func TestDomID(t *testing.T) {
 	assert.Equal(t, expected, cfg.DomID)
 }
 
+func TestPersistAuthorization(t *testing.T) {
+	expected := true
+	cfg := Config{}
+	configFunc := PersistAuthorization(expected)
+	configFunc(&cfg)
+	assert.Equal(t, expected, cfg.PersistAuthorization)
+}
+
 func TestConfigURL(t *testing.T) {
 
 	type fixture struct {

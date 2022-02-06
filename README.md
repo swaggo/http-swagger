@@ -153,6 +153,7 @@ window.onload = function() {
     docExpansion: "none",
     dom_id: "#swagger-ui-id",
     validatorUrl: null,
+	  persistAuthorization: false,
     presets: [
       SwaggerUIBundle.presets.apis,
       SwaggerUIStandalonePreset
