@@ -106,11 +106,10 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 	var once sync.Once
 
 	config := &Config{
-		URL:                  "doc.json",
-		DeepLinking:          true,
-		DocExpansion:         "list",
-		DomID:                "#swagger-ui",
-		PersistAuthorization: false,
+		URL:          "doc.json",
+		DeepLinking:  true,
+		DocExpansion: "list",
+		DomID:        "#swagger-ui",
 	}
 	for _, configFn := range configFns {
 		configFn(config)
@@ -243,7 +242,7 @@ window.onload = function() {
     deepLinking: {{.DeepLinking}},
     docExpansion: "{{.DocExpansion}}",
     dom_id: "{{.DomID}}",
-	persistAuthorization: {{.PersistAuthorization}},
+    persistAuthorization: {{.PersistAuthorization}},
     validatorUrl: null,
     presets: [
       SwaggerUIBundle.presets.apis,
