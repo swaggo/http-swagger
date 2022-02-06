@@ -17,14 +17,15 @@ var WrapHandler = Handler()
 // Config stores httpSwagger configuration variables.
 type Config struct {
 	// The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `doc.json`.
-	URL          string
-	DeepLinking  bool
-	DocExpansion string
-	DomID        string
-	Plugins      []template.JS
-	UIConfig     map[template.JS]template.JS
-	BeforeScript template.JS
-	AfterScript  template.JS
+	URL                  string
+	DeepLinking          bool
+	DocExpansion         string
+	DomID                string
+	PersistAuthorization bool
+	Plugins              []template.JS
+	UIConfig             map[template.JS]template.JS
+	BeforeScript         template.JS
+	AfterScript          template.JS
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -52,6 +53,14 @@ func DocExpansion(docExpansion string) func(c *Config) {
 func DomID(domID string) func(c *Config) {
 	return func(c *Config) {
 		c.DomID = domID
+	}
+}
+
+// If set to true, it persists authorization data and it would not be lost on browser close/refresh
+// Defaults to false
+func PersistAuthorization(persistAuthorization bool) func(c *Config) {
+	return func(c *Config) {
+		c.PersistAuthorization = persistAuthorization
 	}
 }
 
@@ -233,6 +242,7 @@ window.onload = function() {
     deepLinking: {{.DeepLinking}},
     docExpansion: "{{.DocExpansion}}",
     dom_id: "{{.DomID}}",
+    persistAuthorization: {{.PersistAuthorization}},
     validatorUrl: null,
     presets: [
       SwaggerUIBundle.presets.apis,

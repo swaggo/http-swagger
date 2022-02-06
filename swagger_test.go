@@ -115,6 +115,14 @@ func TestDomID(t *testing.T) {
 	assert.Equal(t, expected, cfg.DomID)
 }
 
+func TestPersistAuthorization(t *testing.T) {
+	expected := true
+	cfg := Config{}
+	configFunc := PersistAuthorization(expected)
+	configFunc(&cfg)
+	assert.Equal(t, expected, cfg.PersistAuthorization)
+}
+
 func TestConfigURL(t *testing.T) {
 
 	type fixture struct {
@@ -299,10 +307,11 @@ func TestUIConfigOptions(t *testing.T) {
 		{
 			desc: "default configuration",
 			cfg: &Config{
-				URL:          "doc.json",
-				DeepLinking:  true,
-				DocExpansion: "list",
-				DomID:        "#swagger-ui",
+				URL:                  "doc.json",
+				DeepLinking:          true,
+				DocExpansion:         "list",
+				DomID:                "#swagger-ui",
+				PersistAuthorization: false,
 			},
 			exp: `window.onload = function() {
   
@@ -311,6 +320,7 @@ func TestUIConfigOptions(t *testing.T) {
     deepLinking:  true ,
     docExpansion: "list",
     dom_id: "#swagger-ui",
+    persistAuthorization:  false ,
     validatorUrl: null,
     presets: [
       SwaggerUIBundle.presets.apis,
@@ -328,10 +338,11 @@ func TestUIConfigOptions(t *testing.T) {
 		{
 			desc: "script configuration",
 			cfg: &Config{
-				URL:          "swagger.json",
-				DeepLinking:  false,
-				DocExpansion: "none",
-				DomID:        "#swagger-ui-id",
+				URL:                  "swagger.json",
+				DeepLinking:          false,
+				PersistAuthorization: true,
+				DocExpansion:         "none",
+				DomID:                "#swagger-ui-id",
 				BeforeScript: `const SomePlugin = (system) => ({
     // Some plugin
   });
@@ -361,6 +372,7 @@ func TestUIConfigOptions(t *testing.T) {
     deepLinking:  false ,
     docExpansion: "none",
     dom_id: "#swagger-ui-id",
+    persistAuthorization:  true ,
     validatorUrl: null,
     presets: [
       SwaggerUIBundle.presets.apis,
