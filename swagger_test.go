@@ -320,7 +320,7 @@ func TestUIConfigOptions(t *testing.T) {
     deepLinking:  true ,
     docExpansion: "list",
     dom_id: "#swagger-ui",
-	persistAuthorization:  false ,
+    persistAuthorization:  false ,
     validatorUrl: null,
     presets: [
       SwaggerUIBundle.presets.apis,
@@ -372,7 +372,7 @@ func TestUIConfigOptions(t *testing.T) {
     deepLinking:  false ,
     docExpansion: "none",
     dom_id: "#swagger-ui-id",
-	persistAuthorization:  true ,
+    persistAuthorization:  true ,
     validatorUrl: null,
     presets: [
       SwaggerUIBundle.presets.apis,
