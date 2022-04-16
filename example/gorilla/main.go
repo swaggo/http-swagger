@@ -31,7 +31,7 @@ func main() {
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 		httpSwagger.DomID("#swagger-ui"),
-	))
+	)).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":1323", r))
 }
