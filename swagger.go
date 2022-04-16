@@ -159,7 +159,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			}
 			_, _ = w.Write([]byte(doc))
 		case "":
-			http.Redirect(w, r, h.Prefix+"index.html", 301)
+			http.Redirect(w, r, h.Prefix+"index.html", http.StatusMovedPermanently)
 		default:
 			h.ServeHTTP(w, r)
 		}
