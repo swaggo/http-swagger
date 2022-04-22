@@ -3,6 +3,7 @@ package httpSwagger
 import (
 	"bytes"
 	"html/template"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -49,10 +50,16 @@ func TestWrapHandler(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, performRequest(http.MethodGet, "/doc.json", router).Code)
 
-	swag.Register(swag.Name, &mockedSwag{})
+	doc := &mockedSwag{}
+	swag.Register(swag.Name, doc)
 	w2 := performRequest(http.MethodGet, "/doc.json", router)
 	assert.Equal(t, http.StatusOK, w2.Code)
 	assert.Equal(t, "application/json; charset=utf-8", w2.Header().Get("content-type"))
+
+	// Perform body rendering validation
+	w2Body, err := ioutil.ReadAll(w2.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, doc.ReadDoc(), string(w2Body))
 
 	w3 := performRequest(http.MethodGet, "/favicon-16x16.png", router)
 	assert.Equal(t, http.StatusOK, w3.Code)
@@ -114,6 +121,23 @@ func TestDomID(t *testing.T) {
 	configFunc := DomID(expected)
 	configFunc(&cfg)
 	assert.Equal(t, expected, cfg.DomID)
+}
+
+func TestInstanceName(t *testing.T) {
+	var cfg Config
+
+	assert.Equal(t, "", cfg.InstanceName)
+
+	expected := swag.Name
+	InstanceName(expected)(&cfg)
+	assert.Equal(t, expected, cfg.InstanceName)
+
+	expected = "custom_name"
+	InstanceName(expected)(&cfg)
+	assert.Equal(t, expected, cfg.InstanceName)
+
+	newCfg := newConfig(InstanceName(""))
+	assert.Equal(t, swag.Name, newCfg.InstanceName)
 }
 
 func TestPersistAuthorization(t *testing.T) {
