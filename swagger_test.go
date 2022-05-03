@@ -335,7 +335,7 @@ func TestUIConfigOptions(t *testing.T) {
 				URL:                  "doc.json",
 				DeepLinking:          true,
 				DocExpansion:         "list",
-				DomID:                "#swagger-ui",
+				DomID:                "swagger-ui",
 				PersistAuthorization: false,
 			},
 			exp: `window.onload = function() {
@@ -367,7 +367,7 @@ func TestUIConfigOptions(t *testing.T) {
 				DeepLinking:          false,
 				PersistAuthorization: true,
 				DocExpansion:         "none",
-				DomID:                "#swagger-ui-id",
+				DomID:                "swagger-ui-id",
 				BeforeScript: `const SomePlugin = (system) => ({
     // Some plugin
   });

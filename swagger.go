@@ -270,7 +270,7 @@ window.onload = function() {
     url: "{{.URL}}",
     deepLinking: {{.DeepLinking}},
     docExpansion: "{{.DocExpansion}}",
-    dom_id: "{{.DomID}}",
+    dom_id: "#{{.DomID}}",
     persistAuthorization: {{.PersistAuthorization}},
     validatorUrl: null,
     presets: [
