@@ -30,7 +30,7 @@ func main() {
 		httpSwagger.URL("http://localhost:1323/swagger/doc.json"), //The url pointing to API definition
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
-		httpSwagger.DomID("#swagger-ui"),
+		httpSwagger.DomID("swagger-ui"),
 	)).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":1323", r))

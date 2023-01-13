@@ -27,8 +27,11 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.BeforeScript("console.log('before 1')"),
+		httpSwagger.BeforeScript("console.log('before 2')"),
 		httpSwagger.URL("http://localhost:1323/swagger/doc.json"), //The url pointing to API definition
 	))
 
+	log.Println("Listening :1323")
 	log.Fatal(http.ListenAndServe(":1323", r))
 }
