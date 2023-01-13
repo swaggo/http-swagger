@@ -27,8 +27,15 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.ScriptSrc("https://unpkg.com/htm@3.1.1/dist/htm.js"),
+		httpSwagger.ScriptSrc("https://unpkg.com/react@17.0.2/umd/react.production.min.js"),
+		httpSwagger.ScriptSrc("/static/myplugin.js"),
+		httpSwagger.Plugins([]string{"MyPlugin"}),
 		httpSwagger.URL("http://localhost:1323/swagger/doc.json"), //The url pointing to API definition
 	))
+
+	fs := http.FileServer(http.Dir("static"))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	log.Fatal(http.ListenAndServe(":1323", r))
 }
