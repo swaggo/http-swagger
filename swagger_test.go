@@ -212,9 +212,9 @@ func TestConfigURL(t *testing.T) {
 		{
 			desc: "configure BeforeScript",
 			exp: &Config{
-				BeforeScript: `const SomePlugin = (system) => ({
+				BeforeScripts: []template.JS{`const SomePlugin = (system) => ({
     // Some plugin
-  });`,
+  });`},
 			},
 			cfgfn: BeforeScript(`const SomePlugin = (system) => ({
     // Some plugin
@@ -223,9 +223,9 @@ func TestConfigURL(t *testing.T) {
 		{
 			desc: "configure AfterScript",
 			exp: &Config{
-				AfterScript: `const SomePlugin = (system) => ({
+				AfterScripts: []template.JS{`const SomePlugin = (system) => ({
     // Some plugin
-  });`,
+  });`},
 			},
 			cfgfn: AfterScript(`const SomePlugin = (system) => ({
     // Some plugin
@@ -240,6 +240,23 @@ func TestConfigURL(t *testing.T) {
 			assert.Equal(t, cfg, fix.exp)
 		})
 	}
+}
+
+func TestMultipleScripts(t *testing.T) {
+	router := http.NewServeMux()
+
+	router.Handle("/", Handler(
+		BeforeScript("before 1"),
+		BeforeScript("before 2"),
+		AfterScript("after 1"),
+		AfterScript("after 2"),
+	))
+
+	w1 := performRequest(http.MethodGet, "/index.html", router)
+	assert.Contains(t, w1.Body.String(), "before 1")
+	assert.Contains(t, w1.Body.String(), "before 2")
+	assert.Contains(t, w1.Body.String(), "after 1")
+	assert.Contains(t, w1.Body.String(), "after 2")
 }
 
 func TestUIConfigOptions(t *testing.T) {
@@ -367,14 +384,14 @@ func TestUIConfigOptions(t *testing.T) {
 				PersistAuthorization: true,
 				DocExpansion:         "none",
 				DomID:                "swagger-ui-id",
-				BeforeScript: `const SomePlugin = (system) => ({
+				BeforeScripts: []template.JS{`const SomePlugin = (system) => ({
     // Some plugin
   });
-`,
-				AfterScript: `const someOtherCode = function(){
+`},
+				AfterScripts: []template.JS{`const someOtherCode = function(){
     // Do something
   };
-  someOtherCode();`,
+  someOtherCode();`},
 				Plugins: []template.JS{
 					"SomePlugin",
 					"AnotherPlugin",

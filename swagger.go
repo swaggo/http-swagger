@@ -21,8 +21,8 @@ type Config struct {
 	DocExpansion         string
 	DomID                string
 	InstanceName         string
-	BeforeScript         template.JS
-	AfterScript          template.JS
+	BeforeScripts        []template.JS
+	AfterScripts         []template.JS
 	Plugins              []template.JS
 	UIConfig             map[template.JS]template.JS
 	DeepLinking          bool
@@ -50,7 +50,7 @@ func DocExpansion(docExpansion string) func(*Config) {
 	}
 }
 
-// DomID #swagger-ui.
+// DomID #swagger-ui, without #.
 func DomID(domID string) func(*Config) {
 	return func(c *Config) {
 		c.DomID = domID
@@ -98,7 +98,7 @@ func UIConfig(props map[string]string) func(*Config) {
 // BeforeScript holds JavaScript to be run right before the Swagger UI object is created.
 func BeforeScript(js string) func(*Config) {
 	return func(c *Config) {
-		c.BeforeScript = template.JS(js)
+		c.BeforeScripts = append(c.BeforeScripts, template.JS(js))
 	}
 }
 
@@ -106,7 +106,7 @@ func BeforeScript(js string) func(*Config) {
 // and set on the window.
 func AfterScript(js string) func(*Config) {
 	return func(c *Config) {
-		c.AfterScript = template.JS(js)
+		c.AfterScripts = append(c.AfterScripts, template.JS(js))
 	}
 }
 
@@ -261,8 +261,8 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 <script src="./swagger-ui-standalone-preset.js"> </script>
 <script>
 window.onload = function() {
-  {{- if .BeforeScript}}
-  {{.BeforeScript}}
+  {{- range $script := .BeforeScripts }}
+  {{$script}}
   {{- end}}
   // Build a system
   const ui = SwaggerUIBundle({
@@ -289,8 +289,8 @@ window.onload = function() {
   })
 
   window.ui = ui
-  {{- if .AfterScript}}
-  {{.AfterScript}}
+  {{- range $script := .AfterScripts }}
+  {{$script}}
   {{- end}}
 }
 </script>
