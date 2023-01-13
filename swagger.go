@@ -24,6 +24,7 @@ type Config struct {
 	BeforeScript         template.JS
 	AfterScript          template.JS
 	Plugins              []template.JS
+	ScriptSrcs           []string // URLs to the extra scripts to load
 	UIConfig             map[template.JS]template.JS
 	DeepLinking          bool
 	PersistAuthorization bool
@@ -81,6 +82,13 @@ func Plugins(plugins []string) func(*Config) {
 			vs[i] = template.JS(v)
 		}
 		c.Plugins = vs
+	}
+}
+
+// Adds `<script src="src"></script>`
+func ScriptSrc(src string) func(*Config) {
+	return func(c *Config) {
+		c.ScriptSrcs = append(c.ScriptSrcs, src)
 	}
 }
 
@@ -259,6 +267,9 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 
 <script src="./swagger-ui-bundle.js"> </script>
 <script src="./swagger-ui-standalone-preset.js"> </script>
+{{- range $script := .ScriptSrcs }}
+<script src="{{$script}}"> </script>
+{{- end}}
 <script>
 window.onload = function() {
   {{- if .BeforeScript}}
