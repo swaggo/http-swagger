@@ -27,7 +27,7 @@ type Config struct {
 	UIConfig             map[template.JS]template.JS
 	DeepLinking          bool
 	PersistAuthorization bool
-	Layout				 string
+	Layout               string
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -132,7 +132,7 @@ func newConfig(configFns ...func(*Config)) *Config {
 		InstanceName:         "swagger",
 		DeepLinking:          true,
 		PersistAuthorization: false,
-		Layout:     		  string(StandaloneLayout),
+		Layout:               string(StandaloneLayout),
 	}
 
 	for _, fn := range configFns {
