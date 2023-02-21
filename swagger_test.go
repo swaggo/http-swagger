@@ -338,9 +338,8 @@ func TestUIConfigOptions(t *testing.T) {
 				PersistAuthorization: false,
 			},
 			exp: `window.onload = function() {
-  
-  const ui = SwaggerUIBundle({
-    url: "doc.json",
+
+  var configObject = {
     deepLinking:  true ,
     docExpansion: "list",
     dom_id: "#swagger-ui",
@@ -354,7 +353,11 @@ func TestUIConfigOptions(t *testing.T) {
       SwaggerUIBundle.plugins.DownloadUrl
     ],
     layout: "StandaloneLayout"
-  })
+  }
+  configObject.url = "doc.json"
+
+  
+  const ui = SwaggerUIBundle(configObject)
 
   window.ui = ui
 }`,
@@ -390,9 +393,8 @@ func TestUIConfigOptions(t *testing.T) {
     // Some plugin
   });
 
-  
-  const ui = SwaggerUIBundle({
-    url: "swagger.json",
+
+  var configObject = {
     deepLinking:  false ,
     docExpansion: "none",
     dom_id: "#swagger-ui-id",
@@ -411,7 +413,11 @@ func TestUIConfigOptions(t *testing.T) {
     onComplete: () => { window.ui.setBasePath('v3'); },
     showExtensions: true,
     layout: "StandaloneLayout"
-  })
+  }
+  configObject.url = "swagger.json"
+
+  
+  const ui = SwaggerUIBundle(configObject)
 
   window.ui = ui
   const someOtherCode = function(){
