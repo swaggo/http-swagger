@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -14,10 +15,17 @@ import (
 // WrapHandler wraps swaggerFiles.Handler and returns http.HandlerFunc.
 var WrapHandler = Handler()
 
+// URLsConfig stores multiple swagger json uris and names.
+type URLsConfig struct {
+	URL  string `json:"url"`
+	Name string `json:"name"`
+}
+
 // Config stores httpSwagger configuration variables.
 type Config struct {
 	// The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `doc.json`.
 	URL                  string
+	URLs                 []URLsConfig
 	DocExpansion         string
 	DomID                string
 	InstanceName         string
@@ -33,6 +41,13 @@ type Config struct {
 func URL(url string) func(*Config) {
 	return func(c *Config) {
 		c.URL = url
+	}
+}
+
+// URLs adds the url pointing to API definition (normally swagger.json or swagger.yaml) to the list of URLs.
+func URLs(url string, name string) func(*Config) {
+	return func(c *Config) {
+		c.URLs = append(c.URLs, URLsConfig{URL: url, Name: name})
 	}
 }
 
@@ -113,6 +128,7 @@ func AfterScript(js string) func(*Config) {
 func newConfig(configFns ...func(*Config)) *Config {
 	config := Config{
 		URL:                  "doc.json",
+		URLs:                 nil,
 		DocExpansion:         "list",
 		DomID:                "swagger-ui",
 		InstanceName:         "swagger",
@@ -158,7 +174,9 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			handler.Prefix = matches[1]
 		})
 
-		switch filepath.Ext(path) {
+		cleanPath := strings.Split(path, "?")[0]
+
+		switch filepath.Ext(cleanPath) {
 		case ".html":
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		case ".css":
@@ -169,9 +187,13 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			w.Header().Set("Content-Type", "image/png")
 		case ".json":
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		case ".yaml":
+			w.Header().Set("Content-Type", "application/yaml; charset=utf-8")
+		case ".yml":
+			w.Header().Set("Content-Type", "application/yaml; charset=utf-8")
 		}
 
-		switch path {
+		switch cleanPath {
 		case "index.html":
 			_ = index.Execute(w, config)
 		case "doc.json":
@@ -261,12 +283,12 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 <script src="./swagger-ui-standalone-preset.js"> </script>
 <script>
 window.onload = function() {
+
   {{- if .BeforeScript}}
   {{.BeforeScript}}
   {{- end}}
-  // Build a system
-  const ui = SwaggerUIBundle({
-    url: "{{.URL}}",
+
+  var configObject = {
     deepLinking: {{.DeepLinking}},
     docExpansion: "{{.DocExpansion}}",
     dom_id: "#{{.DomID}}",
@@ -286,7 +308,16 @@ window.onload = function() {
     {{$k}}: {{$v}},
     {{- end}}
     layout: "StandaloneLayout"
-  })
+  }
+
+  {{- if .URLs}}
+  configObject.urls = {{.URLs}}
+  {{ else }}
+  configObject.url = "{{.URL}}"
+  {{- end}}
+
+  // Build a system
+  const ui = SwaggerUIBundle(configObject)
 
   window.ui = ui
   {{- if .AfterScript}}

@@ -27,11 +27,16 @@ func main() {
 	r := mux.NewRouter()
 
 	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:1323/swagger/doc.json"), //The url pointing to API definition
+		httpSwagger.URLs("/docs/swagger.json", "swagger 1"),                     //The url pointing to API definition
+		httpSwagger.URLs("/docs/swagger2.json", "swagger 2"),                    //The url pointing to API definition
+		httpSwagger.URLs("http://localhost:1323/swagger/doc.json", "swagger 3"), //The url pointing to API definition
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
-		httpSwagger.DomID("#swagger-ui"),
+		httpSwagger.DomID("swagger-ui"),
 	)).Methods(http.MethodGet)
+
+	// Serve the OpenAPI specification files located in the docs directory
+	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", http.FileServer(http.Dir("./docs"))))
 
 	log.Fatal(http.ListenAndServe(":1323", r))
 }
