@@ -27,7 +27,7 @@ type Config struct {
 	UIConfig             map[template.JS]template.JS
 	DeepLinking          bool
 	PersistAuthorization bool
-	Layout               string
+	Layout               SwaggerLayout
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -111,16 +111,17 @@ func AfterScript(js string) func(*Config) {
 	}
 }
 
-type Layouts string
+type SwaggerLayout string
+
 const (
-	BaseLayout Layouts = "BaseLayout"
-	StandaloneLayout Layouts = "StandaloneLayout"
+	BaseLayout       SwaggerLayout = "BaseLayout"
+	StandaloneLayout SwaggerLayout = "StandaloneLayout"
 )
 
 // Define Layout options are BaseLayout or StandaloneLayout
-func Layout(layout Layouts) func(*Config) {
+func Layout(layout SwaggerLayout) func(*Config) {
 	return func(c *Config) {
-		c.Layout = string(layout)
+		c.Layout = layout
 	}
 }
 
@@ -132,7 +133,7 @@ func newConfig(configFns ...func(*Config)) *Config {
 		InstanceName:         "swagger",
 		DeepLinking:          true,
 		PersistAuthorization: false,
-		Layout:               string(StandaloneLayout),
+		Layout:               StandaloneLayout,
 	}
 
 	for _, fn := range configFns {

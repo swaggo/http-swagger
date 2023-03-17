@@ -336,6 +336,7 @@ func TestUIConfigOptions(t *testing.T) {
 				DocExpansion:         "list",
 				DomID:                "swagger-ui",
 				PersistAuthorization: false,
+				Layout:               StandaloneLayout,
 			},
 			exp: `window.onload = function() {
   
@@ -367,6 +368,7 @@ func TestUIConfigOptions(t *testing.T) {
 				PersistAuthorization: true,
 				DocExpansion:         "none",
 				DomID:                "swagger-ui-id",
+				Layout:               StandaloneLayout,
 				BeforeScript: `const SomePlugin = (system) => ({
     // Some plugin
   });
