@@ -3,7 +3,7 @@ package httpSwagger
 import (
 	"bytes"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -57,7 +57,7 @@ func TestWrapHandler(t *testing.T) {
 	assert.Equal(t, "application/json; charset=utf-8", w2.Header().Get("content-type"))
 
 	// Perform body rendering validation
-	w2Body, err := ioutil.ReadAll(w2.Body)
+	w2Body, err := io.ReadAll(w2.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, doc.ReadDoc(), string(w2Body))
 
@@ -100,11 +100,17 @@ func TestURL(t *testing.T) {
 }
 
 func TestDeepLinking(t *testing.T) {
-	expected := true
-	cfg := Config{}
-	configFunc := DeepLinking(expected)
-	configFunc(&cfg)
-	assert.Equal(t, expected, cfg.DeepLinking)
+	var cfg Config
+	// Default value
+	assert.Equal(t, false, cfg.DeepLinking)
+
+	// Set true
+	DeepLinking(true)(&cfg)
+	assert.Equal(t, true, cfg.DeepLinking)
+
+	// Set false
+	DeepLinking(false)(&cfg)
+	assert.Equal(t, false, cfg.DeepLinking)
 }
 
 func TestDocExpansion(t *testing.T) {
@@ -141,11 +147,18 @@ func TestInstanceName(t *testing.T) {
 }
 
 func TestPersistAuthorization(t *testing.T) {
-	expected := true
-	cfg := Config{}
-	configFunc := PersistAuthorization(expected)
-	configFunc(&cfg)
-	assert.Equal(t, expected, cfg.PersistAuthorization)
+	var cfg Config
+
+	// Default value
+	assert.Equal(t, false, cfg.PersistAuthorization)
+
+	// Set true
+	PersistAuthorization(true)(&cfg)
+	assert.Equal(t, true, cfg.PersistAuthorization)
+
+	// Set false
+	PersistAuthorization(false)(&cfg)
+	assert.Equal(t, false, cfg.PersistAuthorization)
 }
 
 func TestConfigURL(t *testing.T) {
@@ -336,6 +349,7 @@ func TestUIConfigOptions(t *testing.T) {
 				DocExpansion:         "list",
 				DomID:                "swagger-ui",
 				PersistAuthorization: false,
+				Layout:               StandaloneLayout,
 			},
 			exp: `window.onload = function() {
   
@@ -367,6 +381,7 @@ func TestUIConfigOptions(t *testing.T) {
 				PersistAuthorization: true,
 				DocExpansion:         "none",
 				DomID:                "swagger-ui-id",
+				Layout:               StandaloneLayout,
 				BeforeScript: `const SomePlugin = (system) => ({
     // Some plugin
   });
