@@ -2,12 +2,12 @@ package httpSwagger
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
 	"regexp"
-	"sync"
 
-	swaggerFiles "github.com/swaggo/files"
+	swaggerFiles "github.com/swaggo/files/v2"
 	"github.com/swaggo/swag"
 )
 
@@ -149,7 +149,6 @@ func newConfig(configFns ...func(*Config)) *Config {
 
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(configFns ...func(*Config)) http.HandlerFunc {
-	var once sync.Once
 
 	config := newConfig(configFns...)
 
@@ -169,14 +168,10 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 		path := matches[2]
 
-		handler := swaggerFiles.Handler
-		once.Do(func() {
-			handler.Prefix = matches[1]
-		})
-
 		switch filepath.Ext(path) {
 		case ".html":
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 		case ".css":
 			w.Header().Set("Content-Type", "text/css; charset=utf-8")
 		case ".js":
@@ -191,6 +186,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		case "index.html":
 			_ = index.Execute(w, config)
 		case "doc.json":
+			log.Printf("Reading doc")
 			doc, err := swag.ReadDoc(config.InstanceName)
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -200,9 +196,10 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 			_, _ = w.Write([]byte(doc))
 		case "":
-			http.Redirect(w, r, handler.Prefix+"index.html", http.StatusMovedPermanently)
+			http.Redirect(w, r, matches[1]+"/"+"index.html", http.StatusMovedPermanently)
 		default:
-			handler.ServeHTTP(w, r)
+			r.RequestURI = matches[2]
+			http.FileServer(http.FS(swaggerFiles.FS)).ServeHTTP(w, r)
 		}
 	}
 }
