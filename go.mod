@@ -1,10 +1,10 @@
-module github.com/swaggo/http-swagger
+module github.com/swaggo/http-swagger/v2
 
 go 1.17
 
 require (
 	github.com/stretchr/testify v1.7.0
-	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe
+	github.com/swaggo/files/v2 v2.0.0
 	github.com/swaggo/swag v1.8.1
 )
 
@@ -18,7 +18,6 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
