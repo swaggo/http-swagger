@@ -40,46 +40,70 @@ func (s *mockedSwag) ReadDoc() string {
 }
 
 func TestWrapHandler(t *testing.T) {
-	router := http.NewServeMux()
 
-	router.Handle("/", Handler(DocExpansion("none"), DomID("#swagger-ui")))
+	tests := []struct {
+		RootFolder   string
+		InstanceName string
+	}{
+		{
+			RootFolder:   "/",
+			InstanceName: "default",
+		},
 
-	w1 := performRequest(http.MethodGet, "/index.html", router)
-	assert.Equal(t, http.StatusOK, w1.Code)
-	assert.Equal(t, w1.Header()["Content-Type"][0], "text/html; charset=utf-8")
+		{
+			RootFolder:   "/swagger/",
+			InstanceName: "swagger",
+		},
+		{
+			RootFolder:   "/custom/",
+			InstanceName: "custom",
+		},
+	}
+	for _, test := range tests {
+		router := http.NewServeMux()
+		router.Handle(test.RootFolder, Handler(
+			DocExpansion("none"),
+			DomID("swagger-ui"),
+			InstanceName(test.InstanceName),
+		))
 
-	assert.Equal(t, http.StatusInternalServerError, performRequest(http.MethodGet, "/doc.json", router).Code)
+		w1 := performRequest(http.MethodGet, test.RootFolder+"index.html", router)
+		assert.Equal(t, http.StatusOK, w1.Code)
+		assert.Equal(t, w1.Header()["Content-Type"][0], "text/html; charset=utf-8")
 
-	doc := &mockedSwag{}
-	swag.Register(swag.Name, doc)
-	w2 := performRequest(http.MethodGet, "/doc.json", router)
-	assert.Equal(t, http.StatusOK, w2.Code)
-	assert.Equal(t, "application/json; charset=utf-8", w2.Header().Get("content-type"))
+		assert.Equal(t, http.StatusInternalServerError, performRequest(http.MethodGet, test.RootFolder+"doc.json", router).Code)
 
-	// Perform body rendering validation
-	w2Body, err := io.ReadAll(w2.Body)
-	assert.NoError(t, err)
-	assert.Equal(t, doc.ReadDoc(), string(w2Body))
+		doc := &mockedSwag{}
+		swag.Register(test.InstanceName, doc)
+		w2 := performRequest(http.MethodGet, test.RootFolder+"doc.json", router)
+		assert.Equal(t, http.StatusOK, w2.Code)
+		assert.Equal(t, "application/json; charset=utf-8", w2.Header().Get("content-type"))
 
-	w3 := performRequest(http.MethodGet, "/favicon-16x16.png", router)
-	assert.Equal(t, http.StatusOK, w3.Code)
-	assert.Equal(t, w3.Header()["Content-Type"][0], "image/png")
+		// Perform body rendering validation
+		w2Body, err := io.ReadAll(w2.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, doc.ReadDoc(), string(w2Body))
 
-	w4 := performRequest(http.MethodGet, "/swagger-ui.css", router)
-	assert.Equal(t, http.StatusOK, w4.Code)
-	assert.Equal(t, w4.Header()["Content-Type"][0], "text/css; charset=utf-8")
+		w3 := performRequest(http.MethodGet, test.RootFolder+"favicon-16x16.png", router)
+		assert.Equal(t, http.StatusOK, w3.Code)
+		assert.Equal(t, w3.Header()["Content-Type"][0], "image/png")
 
-	w5 := performRequest(http.MethodGet, "/swagger-ui-bundle.js", router)
-	assert.Equal(t, http.StatusOK, w5.Code)
-	assert.Equal(t, w5.Header()["Content-Type"][0], "application/javascript")
+		w4 := performRequest(http.MethodGet, test.RootFolder+"swagger-ui.css", router)
+		assert.Equal(t, http.StatusOK, w4.Code)
+		assert.Equal(t, w4.Header()["Content-Type"][0], "text/css; charset=utf-8")
 
-	assert.Equal(t, http.StatusNotFound, performRequest(http.MethodGet, "/notfound", router).Code)
+		w5 := performRequest(http.MethodGet, test.RootFolder+"swagger-ui-bundle.js", router)
+		assert.Equal(t, http.StatusOK, w5.Code)
+		assert.Equal(t, w5.Header()["Content-Type"][0], "application/javascript")
 
-	assert.Equal(t, 301, performRequest(http.MethodGet, "/", router).Code)
+		assert.Equal(t, http.StatusNotFound, performRequest(http.MethodGet, test.RootFolder+"notfound", router).Code)
 
-	assert.Equal(t, http.StatusMethodNotAllowed, performRequest(http.MethodPost, "/swagger/index.html", router).Code)
+		assert.Equal(t, 301, performRequest(http.MethodGet, test.RootFolder, router).Code)
 
-	assert.Equal(t, http.StatusMethodNotAllowed, performRequest(http.MethodPut, "/swagger/index.html", router).Code)
+		assert.Equal(t, http.StatusMethodNotAllowed, performRequest(http.MethodPost, test.RootFolder+"index.html", router).Code)
+
+		assert.Equal(t, http.StatusMethodNotAllowed, performRequest(http.MethodPut, test.RootFolder+"index.html", router).Code)
+	}
 }
 
 func performRequest(method, target string, h http.Handler) *httptest.ResponseRecorder {
@@ -92,10 +116,10 @@ func performRequest(method, target string, h http.Handler) *httptest.ResponseRec
 }
 
 func TestURL(t *testing.T) {
+	var cfg *Config
+
 	expected := "https://github.com/swaggo/http-swagger"
-	cfg := Config{}
-	configFunc := URL(expected)
-	configFunc(&cfg)
+	cfg = newConfig(URL(expected))
 	assert.Equal(t, expected, cfg.URL)
 }
 
@@ -113,51 +137,60 @@ func TestDeepLinking(t *testing.T) {
 	assert.Equal(t, false, cfg.DeepLinking)
 }
 
+func TestLayout(t *testing.T) {
+	var cfg *Config
+
+	cfg = newConfig()
+	assert.Equal(t, StandaloneLayout, cfg.Layout)
+
+	cfg = newConfig(Layout(BaseLayout))
+	assert.Equal(t, BaseLayout, cfg.Layout)
+}
+
 func TestDocExpansion(t *testing.T) {
+	var cfg *Config
+
 	expected := "https://github.com/swaggo/docs"
-	cfg := Config{}
-	configFunc := DocExpansion(expected)
-	configFunc(&cfg)
+	cfg = newConfig(DocExpansion(expected))
 	assert.Equal(t, expected, cfg.DocExpansion)
 }
 
 func TestDomID(t *testing.T) {
-	expected := "#swagger-ui"
-	cfg := Config{}
-	configFunc := DomID(expected)
-	configFunc(&cfg)
+	var cfg *Config
+
+	expected := "swagger-ui"
+	cfg = newConfig(DomID(expected))
 	assert.Equal(t, expected, cfg.DomID)
 }
 
 func TestInstanceName(t *testing.T) {
-	var cfg Config
-
-	assert.Equal(t, "", cfg.InstanceName)
+	var cfg *Config
 
 	expected := swag.Name
-	InstanceName(expected)(&cfg)
+	cfg = newConfig(InstanceName(expected))
 	assert.Equal(t, expected, cfg.InstanceName)
 
 	expected = "custom_name"
-	InstanceName(expected)(&cfg)
+	cfg = newConfig(InstanceName(expected))
 	assert.Equal(t, expected, cfg.InstanceName)
 
-	newCfg := newConfig(InstanceName(""))
-	assert.Equal(t, swag.Name, newCfg.InstanceName)
+	cfg = newConfig(InstanceName(""))
+	assert.Equal(t, swag.Name, cfg.InstanceName)
 }
 
 func TestPersistAuthorization(t *testing.T) {
-	var cfg Config
+	var cfg *Config
 
 	// Default value
+	cfg = newConfig()
 	assert.Equal(t, false, cfg.PersistAuthorization)
 
 	// Set true
-	PersistAuthorization(true)(&cfg)
+	cfg = newConfig(PersistAuthorization(true))
 	assert.Equal(t, true, cfg.PersistAuthorization)
 
 	// Set false
-	PersistAuthorization(false)(&cfg)
+	cfg = newConfig(PersistAuthorization(false))
 	assert.Equal(t, false, cfg.PersistAuthorization)
 }
 

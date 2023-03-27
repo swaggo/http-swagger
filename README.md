@@ -152,7 +152,7 @@ window.onload = function() {
     url: "swagger.json",
     deepLinking:  false ,
     docExpansion: "none",
-    dom_id: "#swagger-ui-id",
+    dom_id: "swagger-ui-id",
     validatorUrl: null,
     persistAuthorization: false,
     presets: [
