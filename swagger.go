@@ -2,7 +2,6 @@ package httpSwagger
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -186,7 +185,6 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		case "index.html":
 			_ = index.Execute(w, config)
 		case "doc.json":
-			log.Printf("Reading doc")
 			doc, err := swag.ReadDoc(config.InstanceName)
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -198,7 +196,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		case "":
 			http.Redirect(w, r, matches[1]+"/"+"index.html", http.StatusMovedPermanently)
 		default:
-			r.RequestURI = matches[2]
+			r.URL.Path = matches[2]
 			http.FileServer(http.FS(swaggerFiles.FS)).ServeHTTP(w, r)
 		}
 	}
