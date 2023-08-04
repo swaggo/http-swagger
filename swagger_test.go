@@ -377,12 +377,13 @@ func TestUIConfigOptions(t *testing.T) {
 		{
 			desc: "default configuration",
 			cfg: &Config{
-				URL:                  "doc.json",
-				DeepLinking:          true,
-				DocExpansion:         "list",
-				DomID:                "swagger-ui",
-				PersistAuthorization: false,
-				Layout:               StandaloneLayout,
+				URL:                      "doc.json",
+				DeepLinking:              true,
+				DocExpansion:             "list",
+				DomID:                    "swagger-ui",
+				PersistAuthorization:     false,
+				Layout:                   StandaloneLayout,
+				DefaultModelsExpandDepth: ShowModel,
 			},
 			exp: `window.onload = function() {
   
@@ -400,7 +401,8 @@ func TestUIConfigOptions(t *testing.T) {
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
     ],
-    layout: "StandaloneLayout"
+    layout: "StandaloneLayout",
+    defaultModelsExpandDepth:  1 
   })
 
   window.ui = ui
@@ -432,6 +434,7 @@ func TestUIConfigOptions(t *testing.T) {
 					"onComplete":            `() => { window.ui.setBasePath('v3'); }`,
 					"defaultModelRendering": `"model"`,
 				},
+				DefaultModelsExpandDepth: HideModel,
 			},
 			exp: `window.onload = function() {
   const SomePlugin = (system) => ({
@@ -458,7 +461,8 @@ func TestUIConfigOptions(t *testing.T) {
     defaultModelRendering: "model",
     onComplete: () => { window.ui.setBasePath('v3'); },
     showExtensions: true,
-    layout: "StandaloneLayout"
+    layout: "StandaloneLayout",
+    defaultModelsExpandDepth:  -1 
   })
 
   window.ui = ui
@@ -536,4 +540,18 @@ func TestUIConfigOptions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDefaultModelsExpandDepth(t *testing.T) {
+	cfg := newConfig()
+	// Default value
+	assert.Equal(t, ShowModel, cfg.DefaultModelsExpandDepth)
+
+	// Set -1
+	DefaultModelsExpandDepth(HideModel)(cfg)
+	assert.Equal(t, HideModel, cfg.DefaultModelsExpandDepth)
+
+	// Set false
+	DefaultModelsExpandDepth(ShowModel)(cfg)
+	assert.Equal(t, ShowModel, cfg.DefaultModelsExpandDepth)
 }
