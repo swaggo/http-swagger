@@ -133,6 +133,7 @@ const (
 )
 
 // DefaultModelsExpandDepth presents the model of response and request.
+// set the default expansion depth for models
 func DefaultModelsExpandDepth(defaultModelsExpandDepth ModelsExpandDepthType) func(*Config) {
 	return func(c *Config) {
 		c.DefaultModelsExpandDepth = defaultModelsExpandDepth
