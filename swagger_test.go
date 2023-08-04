@@ -547,11 +547,11 @@ func TestDefaultModelsExpandDepth(t *testing.T) {
 	// Default value
 	assert.Equal(t, ShowModel, cfg.DefaultModelsExpandDepth)
 
-	// Set -1
+	// Set hide
 	DefaultModelsExpandDepth(HideModel)(cfg)
 	assert.Equal(t, HideModel, cfg.DefaultModelsExpandDepth)
 
-	// Set false
+	// Set show
 	DefaultModelsExpandDepth(ShowModel)(cfg)
 	assert.Equal(t, ShowModel, cfg.DefaultModelsExpandDepth)
 }
