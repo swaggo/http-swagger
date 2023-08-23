@@ -14,18 +14,20 @@ V2 require go 1.16 or higher due to the use of `embed` package.
 ### Start using it
 1. Add comments to your API source code, [See Declarative Comments Format](https://github.com/swaggo/swag#declarative-comments-format).
 2. Download [Swag](https://github.com/swaggo/swag) for Go by using:
-
 ```sh
-$ go get github.com/swaggo/swag/cmd/swag
+go install github.com/swaggo/swag/cmd/swag@latest
 ```
+To build from source you need [Go](https://golang.org/dl/) (1.17 or newer).
+
+Or download a pre-compiled binary from the [release page](https://github.com/swaggo/swag/releases).
 
 3. Run the [Swag](https://github.com/swaggo/swag) in your Go project root folder which contains `main.go` file, [Swag](https://github.com/swaggo/swag) will parse comments and generate required files(`docs` folder and `docs/doc.go`).
 ```sh
-$ swag init
+swag init
 ```
-4.Download [http-swagger](https://github.com/swaggo/http-swagger) by using:
+4. Download [http-swagger](https://github.com/swaggo/http-swagger) by using:
 ```sh
-$ go get -u github.com/swaggo/http-swagger
+go get -u github.com/swaggo/http-swagger
 ```
 And import following in your code:
 
