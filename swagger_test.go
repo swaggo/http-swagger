@@ -96,6 +96,10 @@ func TestWrapHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w5.Code)
 		assert.Equal(t, w5.Header()["Content-Type"][0], "application/javascript")
 
+		w6 := performRequest(http.MethodGet, test.RootFolder+"oauth2-redirect.html?state=0&session_state=1&code=2", router)
+		assert.Equal(t, http.StatusOK, w6.Code)
+		assert.Equal(t, w6.Header()["Content-Type"][0], "text/html; charset=utf-8")
+
 		assert.Equal(t, http.StatusNotFound, performRequest(http.MethodGet, test.RootFolder+"notfound", router).Code)
 
 		assert.Equal(t, 301, performRequest(http.MethodGet, test.RootFolder, router).Code)

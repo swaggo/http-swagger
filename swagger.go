@@ -3,6 +3,7 @@ package httpSwagger
 import (
 	"html/template"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"regexp"
 
@@ -213,7 +214,13 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		case "":
 			http.Redirect(w, r, matches[1]+"/"+"index.html", http.StatusMovedPermanently)
 		default:
-			r.URL.Path = matches[2]
+			var err error
+			r.URL, err = url.Parse(matches[2])
+			if err != nil {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+				return
+			}
 			http.FileServer(http.FS(swaggerFiles.FS)).ServeHTTP(w, r)
 		}
 	}
