@@ -559,3 +559,16 @@ func TestDefaultModelsExpandDepth(t *testing.T) {
 	DefaultModelsExpandDepth(ShowModel)(cfg)
 	assert.Equal(t, ShowModel, cfg.DefaultModelsExpandDepth)
 }
+
+func TestShowExtensions(t *testing.T) {
+	var cfg *Config
+
+	cfg = newConfig()
+	assert.False(t, cfg.ShowExtensions)
+
+	cfg = newConfig(ShowExtensions(true))
+	assert.True(t, cfg.ShowExtensions)
+
+	cfg = newConfig(ShowExtensions(false))
+	assert.False(t, cfg.ShowExtensions)
+}
