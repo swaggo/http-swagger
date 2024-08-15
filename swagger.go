@@ -8,7 +8,7 @@ import (
 	"regexp"
 
 	swaggerFiles "github.com/swaggo/files/v2"
-	"github.com/swaggo/swag"
+	"github.com/swaggo/swag/v2"
 )
 
 // WrapHandler wraps swaggerFiles.Handler and returns http.HandlerFunc.
