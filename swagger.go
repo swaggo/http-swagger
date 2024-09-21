@@ -207,12 +207,14 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			w.Header().Set("Content-Type", "image/png")
 		case ".json":
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		case ".yaml":
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		}
 
 		switch path {
 		case "index.html":
 			_ = index.Execute(w, config)
-		case "doc.json":
+		case "doc.json", "doc.yaml":
 			doc, err := swag.ReadDoc(config.InstanceName)
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
