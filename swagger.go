@@ -191,7 +191,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			return
 		}
 
-		matches := re.FindStringSubmatch(r.RequestURI)
+		matches := re.FindStringSubmatch(r.URL.Path)
 
 		path := matches[2]
 
