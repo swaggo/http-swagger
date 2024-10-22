@@ -181,6 +181,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 	// create a template with name
 	index, _ := template.New("swagger_index.html").Parse(indexTempl)
+	indexJs, _ := template.New("swagger_index.js").Parse(indexJsTempl)
 
 	re := regexp.MustCompile(`^(.*/)([^?].*)?[?|.]*$`)
 
@@ -212,6 +213,8 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		switch path {
 		case "index.html":
 			_ = index.Execute(w, config)
+		case "index.js":
+			_ = indexJs.Execute(w, config)
 		case "doc.json":
 			doc, err := swag.ReadDoc(config.InstanceName)
 			if err != nil {
@@ -235,6 +238,44 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 		}
 	}
 }
+
+const indexJsTempl = `
+window.onload = function() {
+  {{- if .BeforeScript}}
+  {{.BeforeScript}}
+  {{- end}}
+  // Build a system
+  const ui = SwaggerUIBundle({
+    url: "{{.URL}}",
+    deepLinking: {{.DeepLinking}},
+    docExpansion: "{{.DocExpansion}}",
+    dom_id: "#{{.DomID}}",
+    persistAuthorization: {{.PersistAuthorization}},
+    validatorUrl: null,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+      {{- range $plugin := .Plugins }},
+      {{$plugin}}
+      {{- end}}
+    ],
+    {{- range $k, $v := .UIConfig}}
+    {{$k}}: {{$v}},
+    {{- end}}
+    layout: "{{$.Layout}}",
+    defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}},
+    showExtensions: {{.ShowExtensions}}
+  })
+
+  window.ui = ui
+  {{- if .AfterScript}}
+  {{.AfterScript}}
+  {{- end}}
+}
+`
 
 const indexTempl = `<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
@@ -302,45 +343,9 @@ const indexTempl = `<!-- HTML for static distribution bundle build -->
 
 <div id="swagger-ui"></div>
 
+<script src="./index.js"> </script>
 <script src="./swagger-ui-bundle.js"> </script>
 <script src="./swagger-ui-standalone-preset.js"> </script>
-<script>
-window.onload = function() {
-  {{- if .BeforeScript}}
-  {{.BeforeScript}}
-  {{- end}}
-  // Build a system
-  const ui = SwaggerUIBundle({
-    url: "{{.URL}}",
-    deepLinking: {{.DeepLinking}},
-    docExpansion: "{{.DocExpansion}}",
-    dom_id: "#{{.DomID}}",
-    persistAuthorization: {{.PersistAuthorization}},
-    validatorUrl: null,
-    presets: [
-      SwaggerUIBundle.presets.apis,
-      SwaggerUIStandalonePreset
-    ],
-    plugins: [
-      SwaggerUIBundle.plugins.DownloadUrl
-      {{- range $plugin := .Plugins }},
-      {{$plugin}}
-      {{- end}}
-    ],
-    {{- range $k, $v := .UIConfig}}
-    {{$k}}: {{$v}},
-    {{- end}}
-    layout: "{{$.Layout}}",
-    defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}},
-    showExtensions: {{.ShowExtensions}}
-  })
-
-  window.ui = ui
-  {{- if .AfterScript}}
-  {{.AfterScript}}
-  {{- end}}
-}
-</script>
 </body>
 
 </html>
