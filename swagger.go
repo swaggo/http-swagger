@@ -29,6 +29,7 @@ type Config struct {
 	PersistAuthorization     bool
 	Layout                   SwaggerLayout
 	DefaultModelsExpandDepth ModelsExpandDepthType
+	ShowExtensions           bool
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -141,6 +142,14 @@ func DefaultModelsExpandDepth(defaultModelsExpandDepth ModelsExpandDepthType) fu
 	}
 }
 
+// ShowExtensions controls the display of vendor extension (x-) fields and values for Operations,
+// Parameters, Responses, and Schema.
+func ShowExtensions(showExtensions bool) func(config *Config) {
+	return func(c *Config) {
+		c.ShowExtensions = showExtensions
+	}
+}
+
 func newConfig(configFns ...func(*Config)) *Config {
 	config := Config{
 		URL:                      "doc.json",
@@ -151,6 +160,7 @@ func newConfig(configFns ...func(*Config)) *Config {
 		PersistAuthorization:     false,
 		Layout:                   StandaloneLayout,
 		DefaultModelsExpandDepth: ShowModel,
+		ShowExtensions:           false,
 	}
 
 	for _, fn := range configFns {
@@ -256,7 +266,8 @@ window.onload = function() {
     {{$k}}: {{$v}},
     {{- end}}
     layout: "{{$.Layout}}",
-    defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}}
+    defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}},
+    showExtensions: {{.ShowExtensions}}
   })
 
   window.ui = ui
