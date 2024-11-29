@@ -30,6 +30,7 @@ type Config struct {
 	Layout                   SwaggerLayout
 	DefaultModelsExpandDepth ModelsExpandDepthType
 	ShowExtensions           bool
+	SyntaxHighlight          bool
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -105,6 +106,13 @@ func BeforeScript(js string) func(*Config) {
 	}
 }
 
+// SyntaxHighlight true, false.
+func SyntaxHighlight(syntaxHighlight bool) func(*Config) {
+	return func(c *Config) {
+		c.SyntaxHighlight = syntaxHighlight
+	}
+}
+
 // AfterScript holds JavaScript to be run right after the Swagger UI object is created
 // and set on the window.
 func AfterScript(js string) func(*Config) {
@@ -161,6 +169,7 @@ func newConfig(configFns ...func(*Config)) *Config {
 		Layout:                   StandaloneLayout,
 		DefaultModelsExpandDepth: ShowModel,
 		ShowExtensions:           false,
+		SyntaxHighlight:          true,
 	}
 
 	for _, fn := range configFns {
@@ -312,6 +321,7 @@ window.onload = function() {
   // Build a system
   const ui = SwaggerUIBundle({
     url: "{{.URL}}",
+    syntaxHighlight: {{.SyntaxHighlight}},
     deepLinking: {{.DeepLinking}},
     docExpansion: "{{.DocExpansion}}",
     dom_id: "#{{.DomID}}",

@@ -382,17 +382,20 @@ func TestUIConfigOptions(t *testing.T) {
 			desc: "default configuration",
 			cfg: &Config{
 				URL:                      "doc.json",
+				SyntaxHighlight:	  true,
 				DeepLinking:              true,
 				DocExpansion:             "list",
 				DomID:                    "swagger-ui",
 				PersistAuthorization:     false,
 				Layout:                   StandaloneLayout,
 				DefaultModelsExpandDepth: ShowModel,
+				ShowExtensions:		  true,
 			},
 			exp: `window.onload = function() {
   
   const ui = SwaggerUIBundle({
     url: "doc.json",
+    syntaxHighlight:  true ,
     deepLinking:  true ,
     docExpansion: "list",
     dom_id: "#swagger-ui",
@@ -406,7 +409,8 @@ func TestUIConfigOptions(t *testing.T) {
       SwaggerUIBundle.plugins.DownloadUrl
     ],
     layout: "StandaloneLayout",
-    defaultModelsExpandDepth:  1 
+    defaultModelsExpandDepth:  1 ,
+    showExtensions:  true 
   })
 
   window.ui = ui
@@ -416,11 +420,13 @@ func TestUIConfigOptions(t *testing.T) {
 			desc: "script configuration",
 			cfg: &Config{
 				URL:                  "swagger.json",
+				SyntaxHighlight:      true,
 				DeepLinking:          false,
 				PersistAuthorization: true,
 				DocExpansion:         "none",
 				DomID:                "swagger-ui-id",
 				Layout:               StandaloneLayout,
+				ShowExtensions:	      true,
 				BeforeScript: `const SomePlugin = (system) => ({
     // Some plugin
   });
@@ -434,7 +440,6 @@ func TestUIConfigOptions(t *testing.T) {
 					"AnotherPlugin",
 				},
 				UIConfig: map[template.JS]template.JS{
-					"showExtensions":        "true",
 					"onComplete":            `() => { window.ui.setBasePath('v3'); }`,
 					"defaultModelRendering": `"model"`,
 				},
@@ -448,6 +453,7 @@ func TestUIConfigOptions(t *testing.T) {
   
   const ui = SwaggerUIBundle({
     url: "swagger.json",
+    syntaxHighlight:  true ,
     deepLinking:  false ,
     docExpansion: "none",
     dom_id: "#swagger-ui-id",
@@ -464,9 +470,9 @@ func TestUIConfigOptions(t *testing.T) {
     ],
     defaultModelRendering: "model",
     onComplete: () => { window.ui.setBasePath('v3'); },
-    showExtensions: true,
     layout: "StandaloneLayout",
-    defaultModelsExpandDepth:  -1 
+    defaultModelsExpandDepth:  -1 ,
+    showExtensions:  true 
   })
 
   window.ui = ui
@@ -529,12 +535,12 @@ func TestUIConfigOptions(t *testing.T) {
 			for i, expln := range explns {
 				if i >= buflen {
 					printContext(i)
-					t.Fatalf(`first unequal line: expected "%s" but got EOF`, expln)
+					t.Fatalf(`first unequal line on line %d: expected "%s" but got EOF`, i, expln)
 				}
 				bufln := buflns[i]
 				if bufln != expln {
 					printContext(i)
-					t.Fatalf(`first unequal line: expected "%s" but got "%s"`, expln, bufln)
+					t.Fatalf(`first unequal line on line %d: expected "%s" but got "%s"`, i, expln, bufln)
 				}
 			}
 
