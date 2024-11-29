@@ -40,7 +40,6 @@ func (s *mockedSwag) ReadDoc() string {
 }
 
 func TestWrapHandler(t *testing.T) {
-
 	tests := []struct {
 		RootFolder   string
 		InstanceName string
@@ -108,6 +107,24 @@ func TestWrapHandler(t *testing.T) {
 
 		assert.Equal(t, http.StatusMethodNotAllowed, performRequest(http.MethodPut, test.RootFolder+"index.html", router).Code)
 	}
+}
+
+func TestConfigWithOAuth(t *testing.T) {
+	router := http.NewServeMux()
+	router.Handle("/", Handler(OAuth(&OAuthConfig{
+		ClientId: "my-client-id",
+		Realm:    "my-realm",
+		AppName:  "My App Name",
+	})))
+
+	w := performRequest(http.MethodGet, "/index.html", router)
+	assert.Equal(t, 200, w.Code)
+	body := w.Body.String()
+	assert.Contains(t, body, `ui.initOAuth({
+    clientId: "my-client-id",
+    realm: "my-realm",
+    appName: "My App Name"
+  })`)
 }
 
 func performRequest(method, target string, h http.Handler) *httptest.ResponseRecorder {
@@ -199,7 +216,6 @@ func TestPersistAuthorization(t *testing.T) {
 }
 
 func TestConfigURL(t *testing.T) {
-
 	type fixture struct {
 		desc  string
 		cfgfn func(c *Config)
@@ -293,7 +309,6 @@ func TestConfigURL(t *testing.T) {
 }
 
 func TestUIConfigOptions(t *testing.T) {
-
 	type fixture struct {
 		desc string
 		cfg  *Config
@@ -390,7 +405,7 @@ func TestUIConfigOptions(t *testing.T) {
 				DefaultModelsExpandDepth: ShowModel,
 			},
 			exp: `window.onload = function() {
-  
+
   const ui = SwaggerUIBundle({
     url: "doc.json",
     deepLinking:  true ,
@@ -406,8 +421,10 @@ func TestUIConfigOptions(t *testing.T) {
       SwaggerUIBundle.plugins.DownloadUrl
     ],
     layout: "StandaloneLayout",
-    defaultModelsExpandDepth:  1 
+    defaultModelsExpandDepth:  1 ,
+    showExtensions:  false
   })
+
 
   window.ui = ui
 }`,
@@ -445,7 +462,7 @@ func TestUIConfigOptions(t *testing.T) {
     // Some plugin
   });
 
-  
+
   const ui = SwaggerUIBundle({
     url: "swagger.json",
     deepLinking:  false ,
@@ -466,8 +483,10 @@ func TestUIConfigOptions(t *testing.T) {
     onComplete: () => { window.ui.setBasePath('v3'); },
     showExtensions: true,
     layout: "StandaloneLayout",
-    defaultModelsExpandDepth:  -1 
+    defaultModelsExpandDepth:  -1 ,
+	showExtensions: true
   })
+
 
   window.ui = ui
   const someOtherCode = function(){
@@ -571,4 +590,24 @@ func TestShowExtensions(t *testing.T) {
 
 	cfg = newConfig(ShowExtensions(false))
 	assert.False(t, cfg.ShowExtensions)
+}
+
+func TestOAuth(t *testing.T) {
+	var cfg Config
+	expected := OAuthConfig{
+		ClientId: "my-client-id",
+		Realm:    "my-realm",
+		AppName:  "My App Name",
+	}
+	OAuth(&expected)(&cfg)
+	assert.Equal(t, expected.ClientId, cfg.OAuth.ClientId)
+	assert.Equal(t, expected.Realm, cfg.OAuth.Realm)
+	assert.Equal(t, expected.AppName, cfg.OAuth.AppName)
+}
+
+func TestOAuthNil(t *testing.T) {
+	var cfg Config
+	var expected *OAuthConfig
+	OAuth(expected)(&cfg)
+	assert.Equal(t, expected, cfg.OAuth)
 }
