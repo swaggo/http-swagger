@@ -30,6 +30,22 @@ type Config struct {
 	Layout                   SwaggerLayout
 	DefaultModelsExpandDepth ModelsExpandDepthType
 	ShowExtensions           bool
+
+	// The information for OAuth2 integration, if any.
+	OAuth *OAuthConfig
+}
+
+// OAuthConfig stores configuration for Swagger UI OAuth2 integration. See
+// https://swagger.io/docs/open-source-tools/swagger-ui/usage/oauth2/ for further details.
+type OAuthConfig struct {
+	// The ID of the client sent to the OAuth2 IAM provider.
+	ClientId string
+
+	// The OAuth2 realm that the client should operate in. If not applicable, use empty string.
+	Realm string
+
+	// The name to display for the application in the authentication popup.
+	AppName string
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -113,6 +129,12 @@ func AfterScript(js string) func(*Config) {
 	}
 }
 
+func OAuth(config *OAuthConfig) func(*Config) {
+	return func(c *Config) {
+		c.OAuth = config
+	}
+}
+
 type SwaggerLayout string
 
 const (
@@ -176,7 +198,6 @@ func newConfig(configFns ...func(*Config)) *Config {
 
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(configFns ...func(*Config)) http.HandlerFunc {
-
 	config := newConfig(configFns...)
 
 	// create a template with name
@@ -334,6 +355,13 @@ window.onload = function() {
     defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}},
     showExtensions: {{.ShowExtensions}}
   })
+  {{if .OAuth}}
+  ui.initOAuth({
+    clientId: "{{.OAuth.ClientId}}",
+    realm: "{{.OAuth.Realm}}",
+    appName: "{{.OAuth.AppName}}"
+  })
+  {{end}}
 
   window.ui = ui
   {{- if .AfterScript}}
