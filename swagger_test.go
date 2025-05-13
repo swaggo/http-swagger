@@ -388,6 +388,7 @@ func TestUIConfigOptions(t *testing.T) {
 				PersistAuthorization:     false,
 				Layout:                   StandaloneLayout,
 				DefaultModelsExpandDepth: ShowModel,
+				ShowExtensions:           false,
 			},
 			exp: `window.onload = function() {
   
@@ -406,7 +407,8 @@ func TestUIConfigOptions(t *testing.T) {
       SwaggerUIBundle.plugins.DownloadUrl
     ],
     layout: "StandaloneLayout",
-    defaultModelsExpandDepth:  1 
+    defaultModelsExpandDepth:  1 ,
+    showExtensions:  false 
   })
 
   window.ui = ui
@@ -439,6 +441,7 @@ func TestUIConfigOptions(t *testing.T) {
 					"defaultModelRendering": `"model"`,
 				},
 				DefaultModelsExpandDepth: HideModel,
+				ShowExtensions:           true,
 			},
 			exp: `window.onload = function() {
   const SomePlugin = (system) => ({
@@ -466,7 +469,8 @@ func TestUIConfigOptions(t *testing.T) {
     onComplete: () => { window.ui.setBasePath('v3'); },
     showExtensions: true,
     layout: "StandaloneLayout",
-    defaultModelsExpandDepth:  -1 
+    defaultModelsExpandDepth:  -1 ,
+    showExtensions:  true 
   })
 
   window.ui = ui
