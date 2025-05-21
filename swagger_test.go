@@ -107,6 +107,12 @@ func TestWrapHandler(t *testing.T) {
 		assert.Equal(t, http.StatusMethodNotAllowed, performRequest(http.MethodPost, test.RootFolder+"index.html", router).Code)
 
 		assert.Equal(t, http.StatusMethodNotAllowed, performRequest(http.MethodPut, test.RootFolder+"index.html", router).Code)
+
+		w7 := performRequest(http.MethodGet, test.RootFolder+"index.html?param=value&another=value", router)
+		assert.Equal(t, http.StatusOK, w7.Code)
+		assert.Equal(t, w7.Header()["Content-Type"][0], "text/html; charset=utf-8")
+
+		assert.Equal(t, 301, performRequest(http.MethodGet, test.RootFolder+"?param=value&another=value", router).Code)
 	}
 }
 
