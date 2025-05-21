@@ -191,7 +191,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 			return
 		}
 
-		matches := re.FindStringSubmatch(r.RequestURI)
+		matches := re.FindStringSubmatch(r.URL.Path)
 
 		path := matches[2]
 
@@ -222,7 +222,11 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 			_, _ = w.Write([]byte(doc))
 		case "":
-			http.Redirect(w, r, matches[1]+"/"+"index.html", http.StatusMovedPermanently)
+			query := r.URL.RawQuery
+			if query != "" {
+				query = "?" + query
+			}
+			http.Redirect(w, r, matches[1]+"/"+"index.html"+query, http.StatusMovedPermanently)
 		default:
 			var err error
 			r.URL, err = url.Parse(matches[2])
