@@ -211,6 +211,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 		switch path {
 		case "index.html":
+			w.WriteHeader(http.StatusOK)
 			_ = index.Execute(w, config)
 		case "doc.json":
 			doc, err := swag.ReadDoc(config.InstanceName)
@@ -219,7 +220,7 @@ func Handler(configFns ...func(*Config)) http.HandlerFunc {
 
 				return
 			}
-
+			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(doc))
 		case "":
 			http.Redirect(w, r, matches[1]+"/"+"index.html", http.StatusMovedPermanently)
